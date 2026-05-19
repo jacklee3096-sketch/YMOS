@@ -29,9 +29,17 @@
 
 ### Step 1：创建输出目录
 
+**Linux / macOS (Bash)**：
 ```bash
 mkdir -p "Eyes/市场洞察/Raw_Data/$(date +%Y-%m)"
 mkdir -p "Eyes/市场洞察/$(date +%Y-%m)"
+```
+
+**Windows (PowerShell)**：
+```powershell
+$month = Get-Date -Format "yyyy-MM"
+New-Item -ItemType Directory -Path "Eyes/市场洞察/Raw_Data/$month" -Force | Out-Null
+New-Item -ItemType Directory -Path "Eyes/市场洞察/$month" -Force | Out-Null
 ```
 
 ### Step 2：拉取分析数据
@@ -39,10 +47,21 @@ mkdir -p "Eyes/市场洞察/$(date +%Y-%m)"
 #### Step 2.1：拉取 em A股持仓个股新闻
 
 > **必须执行此步。**
+
+**Linux / macOS (Bash)**：
 ```bash
-python3 Eyes\scripts\fetch_em_news.py \
+python3 Eyes/scripts/fetch_em_news.py \
   --hours 24 \
   --output "Eyes/市场洞察/Raw_Data/$(date +%Y-%m)/em_news_$(date +%Y%m%d).json"
+```
+
+**Windows (PowerShell)**：
+```powershell
+$month = Get-Date -Format "yyyy-MM"
+$date = Get-Date -Format "yyyyMMdd"
+python Eyes/scripts/fetch_em_news.py `
+  --hours 24 `
+  --output "Eyes/市场洞察/Raw_Data/$month/em_news_$date.json"
 ```
 
 **策略说明**：
@@ -52,70 +71,94 @@ python3 Eyes\scripts\fetch_em_news.py \
 
 #### Step 2.2：主 RSS 免费数据源
 
+**Linux / macOS (Bash)**：
 ```bash
 python3 Eyes/scripts/fetch_rss_byMiniflux.py 1 \
   --output "Eyes/市场洞察/Raw_Data/$(date +%Y-%m)/financial_data_$(date +%Y%m%d).json"
+```
+
+**Windows (PowerShell)**：
+```powershell
+$month = Get-Date -Format "yyyy-MM"
+$date = Get-Date -Format "yyyyMMdd"
+python Eyes/scripts/fetch_rss_byMiniflux.py 1 `
+  --output "Eyes/市场洞察/Raw_Data/$month/financial_data_$date.json"
 ```
 
 **Agent 执行规则**：
 1. 用户指定天数时，把 `1` 替换为对应天数
 
 #### Step 2.3：补充 RSS 免费数据源
+
+**Linux / macOS (Bash)**：
 ```bash
 python3 Eyes/scripts/fetch_rss_byMiniflux.py 1 \
   --config Eyes/scripts/rss_sources_custom.json \
   --output "Eyes/市场洞察/Raw_Data/$(date +%Y-%m)/supplementary_rss_$(date +%Y%m%d).json"
 ```
 
+**Windows (PowerShell)**：
+```powershell
+$month = Get-Date -Format "yyyy-MM"
+$date = Get-Date -Format "yyyyMMdd"
+python Eyes/scripts/fetch_rss_byMiniflux.py 1 `
+  --config Eyes/scripts/rss_sources_custom.json `
+  --output "Eyes/市场洞察/Raw_Data/$month/supplementary_rss_$date.json"
+```
+
 **Agent 执行规则**：
 1. 用户指定天数时，把 `1` 替换为对应天数
+2. 根据运行平台自动选择对应的命令格式
 
 ---
 
-### Step 2.4 & 2.5：CIO 半成品处理（子 Agent 并行执行）
+### Step 2.4 & 2.5：CIO 半成品处理（子任务串行执行）
 
-> ⚠️ **本步骤使用子 Agent 并行处理，避免大文件污染主会话上下文**
+> ⚠️ **本步骤使用 `general_purpose_task` 子任务处理，避免大文件污染主会话上下文**
 
-#### 子 Agent 配置
+#### 子任务配置
 
-| Agent ID | 任务 | 输入 | 输出 |
+| 任务 ID | 任务 | 输入 | 输出 |
 |:---|:---|:---|:---|
-| `CIO-main` | 主 RSS CIO 处理 | `financial_data_{YYYYMMDD}.json` | `cio_processed_{YYYYMMDD}.md` |
-| `CIO-supple` | 补充 RSS CIO 处理 | `supplementary_rss_{YYYYMMDD}.json` | `cio_processed_custom_{YYYYMMDD}.md` |
+| CIO-main | 主 RSS CIO 处理 | `financial_data_{YYYYMMDD}.json` | `cio_processed_{YYYYMMDD}.md` |
+| CIO-supple | 补充 RSS CIO 处理 | `supplementary_rss_{YYYYMMDD}.json` | `cio_processed_custom_{YYYYMMDD}.md` |
 
 #### 调用方式
 
-**启动 Agent A (CIO-main)**：
+**执行子任务 A (CIO-main)**：
+```json
+{
+  "name": "general_purpose_task",
+  "parameters": {
+    "description": "CIO主RSS处理",
+    "query": "读取文件 Eyes/市场洞察/Raw_Data/{YYYY-MM}/financial_data_{YYYYMMDD}.json，按照 Brain/references/cio-rss-processor.md 的规则处理（智能去重合并、噪音过滤、事件聚类、信号提取分类），输出格式化的半成品情报到 Eyes/市场洞察/Raw_Data/{YYYY-MM}/cio_processed_{YYYYMMDD}.md，处理完成后无需返回详细摘要",
+    "response_language": "zh"
+  }
+}
 ```
-## 任务：处理主 RSS 原始数据
 
-- 提示词：`Brain/references/cio-rss-processor.md`
-- 输入：`Eyes/市场洞察/Raw_Data/{YYYY-MM}/financial_data_{YYYYMMDD}.json`
-- 输出：`Eyes/市场洞察/Raw_Data/{YYYY-MM}/cio_processed_{YYYYMMDD}.md`
-
-请执行。
-```
-
-**启动 Agent B (CIO-supple)**：
-```
-## 任务：处理补充 RSS 原始数据
-
-- 提示词：`Brain/references/cio-rss-processor.md`
-- 输入：`Eyes/市场洞察/Raw_Data/{YYYY-MM}/supplementary_rss_{YYYYMMDD}.json`
-- 输出：`Eyes/市场洞察/Raw_Data/{YYYY-MM}/cio_processed_custom_{YYYYMMDD}.md`
-
-请执行。
+**执行子任务 B (CIO-supple)**：
+```json
+{
+  "name": "general_purpose_task",
+  "parameters": {
+    "description": "CIO补充RSS处理",
+    "query": "读取文件 Eyes/市场洞察/Raw_Data/{YYYY-MM}/supplementary_rss_{YYYYMMDD}.json，按照 Brain/references/cio-rss-processor.md 的规则处理（智能去重合并、噪音过滤、事件聚类、信号提取分类），输出格式化的半成品情报到 Eyes/市场洞察/Raw_Data/{YYYY-MM}/cio_processed_custom_{YYYYMMDD}.md，处理完成后无需返回详细摘要",
+    "response_language": "zh"
+  }
+}
 ```
 
 #### 执行时序
 
-- **Step 2.4** 与 **Step 2.5** 可**并行执行**（无依赖）
-- 两个 Agent 都完成后，进入 Step 3
+- **Step 2.4** 与 **Step 2.5** 需**串行执行**（CIO-main 完成后再执行 CIO-supple）
+- 两个子任务都完成后，进入 Step 3
 
 ---
 
 ### Step 3：调用 P13 分析
 
+> ⚠️ **前置条件**：必须等待 Step 2.1 ~ Step 2.5 **全部完成**后才能执行此步骤
 > ⚠️ **无论数据来自 API 还是 RSS，都必须严格按照 P13 标准模板输出。**
 > API 数据质量更高 ≠ 可以简化输出格式。P13 的价值不在于数据清洗（那是 CIO 的活），
 > 而在于 **信号识别 + 结构化呈现**（战略信号仪表盘 + 势能分析 + 风险警告）。

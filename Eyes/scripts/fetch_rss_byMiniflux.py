@@ -101,9 +101,9 @@ def load_sources(category_filter=None, config_path=None):
     if config_path:
         # 指定了配置文件路径，只加载该文件
         config_file = Path(config_path)
-        # 转换为绝对路径（如果是相对路径则以 script_dir 为基准）
+        # 转换为绝对路径（如果是相对路径则以当前工作目录为基准）
         if not config_file.is_absolute():
-            config_file = script_dir / config_file
+            config_file = Path.cwd() / config_file
         
         if config_file.exists():
             try:
