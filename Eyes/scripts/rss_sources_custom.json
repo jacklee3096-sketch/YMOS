@@ -1,0 +1,127 @@
+{
+  "version": "2026-04-23",
+  "description": "Yongmai OS v2.0 自定义 RSS 信息源配置",
+  "categories": ["美股", "宏观", "科技", "Crypto", "深度洞察"],
+  "sources": [
+    {
+      "name": "The Information",
+      "url": "https://www.theinformation.com/feed",
+      "category": "深度洞察",
+      "priority": "high",
+      "note": "SOP 1 深度洞察 - 科技行业深度报道",
+      "miniflux_feed_id": 1
+    },
+    {
+      "name": "ARK Invest",
+      "url": "https://ark-invest.com/feed/",
+      "category": "深度洞察",
+      "priority": "high",
+      "note": "SOP 1 深度洞察 - 投资研究报告",
+      "miniflux_feed_id": 8
+    },
+    {
+      "name": "东财·策略研报",
+      "url": "http://rsshub-rsshub-1:1200/eastmoney/report/strategyreport",
+      "category": "深度洞察",
+      "priority": "high",
+      "note": "SOP 1 深度洞察 - 策略研究报告",
+      "miniflux_feed_id": 40
+    },
+    {
+      "name": "东财·宏观研究",
+      "url": "http://rsshub-rsshub-1:1200/eastmoney/report/macresearch",
+      "category": "宏观",
+      "priority": "high",
+      "note": "SOP 1 深度洞察 - 宏观经济研究",
+      "miniflux_feed_id": 39
+    },
+    {
+      "name": "MarketBeat Instant Alerts",
+      "url": "https://www.marketbeat.com/rss.ashx?type=instant-alerts",
+      "category": "美股",
+      "priority": "high",
+      "note": "SOP 2 势能扫描 - 市场即时提醒",
+      "miniflux_feed_id": 12
+    },
+    {
+      "name": "金十数据·重要",
+      "url": "http://rsshub-rsshub-1:1200/jin10/:important",
+      "category": "宏观",
+      "priority": "high",
+      "note": "SOP 2 势能扫描 - 重要财经数据",
+      "miniflux_feed_id": 44
+    },
+    {
+      "name": "华尔街见闻·美股",
+      "url": "http://rsshub-rsshub-1:1200/wallstreetcn/live/us-stock",
+      "category": "美股",
+      "priority": "medium",
+      "note": "SOP 2 势能扫描 - 实时美股快讯",
+      "miniflux_feed_id": 43
+    },
+    {
+      "name": "财联社·热门",
+      "url": "http://rsshub-rsshub-1:1200/cls/hot",
+      "category": "宏观",
+      "priority": "medium",
+      "note": "SOP 2 势能扫描 - 热门财经新闻",
+      "miniflux_feed_id": 42
+    },
+    {
+      "name": "The Block",
+      "url": "http://rsshub-rsshub-1:1200/theblock/category/crypto-ecosystems",
+      "category": "Crypto",
+      "priority": "medium",
+      "note": "SOP 2 势能扫描 - 加密货币生态",
+      "miniflux_feed_id": 41
+    },
+    {
+      "name": "Technode",
+      "url": "https://technode.com/feed/",
+      "category": "科技",
+      "priority": "medium",
+      "note": "辅助：区域/垂类 - 科技新闻",
+      "miniflux_feed_id": 23
+    },
+    {
+      "name": "EU-Startups",
+      "url": "https://www.eu-startups.com/feed/",
+      "category": "科技",
+      "priority": "low",
+      "note": "辅助：区域/垂类 - 欧洲初创公司",
+      "miniflux_feed_id": 24
+    },
+    {
+      "name": "AltAssets",
+      "url": "https://www.altassets.net/feed",
+      "category": "深度洞察",
+      "priority": "medium",
+      "note": "辅助：区域/垂类 - 另类资产",
+      "miniflux_feed_id": 25
+    },
+    {
+      "name": "东财·券商晨报",
+      "url": "http://rsshub-rsshub-1:1200/eastmoney/report/brokerreport",
+      "category": "深度洞察",
+      "priority": "medium",
+      "note": "辅助：区域/垂类 - 券商晨报",
+      "miniflux_feed_id": 46
+    },
+    {
+      "name": "MacroMicro",
+      "url": "https://sc.macromicro.me/feed",
+      "category": "宏观",
+      "priority": "medium",
+      "note": "辅助：区域/垂类 - 宏观经济数据",
+      "miniflux_feed_id": 27
+    },
+    {
+      "name": "Followin",
+      "url": "http://rsshub-rsshub-1:1200/followin/1/zh-Hans",
+      "category": "科技",
+      "priority": "low",
+      "note": "辅助：区域/垂类 - 科技动态",
+      "miniflux_feed_id": 45
+    }
+  ]
+}
