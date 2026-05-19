@@ -1,0 +1,8 @@
+金融数据查询结果说明
+========================================
+查询内容: 大连电瓷 002606.SZ 深度财务分析
+数据文件路径: C:\Users\lee\.openclaw-autoclaw\workspace\YMOS\miaoxiang\mx_finance_data\mx_finance_data_913c35b6.xlsx
+描述文件路径: C:\Users\lee\.openclaw-autoclaw\workspace\YMOS\miaoxiang\mx_finance_data\mx_finance_data_913c35b6_description.txt
+数据行数: 13
+表数量: 1
+Sheet 列表: 大连电瓷(002606.SZ)的营业总收入、营业收入等

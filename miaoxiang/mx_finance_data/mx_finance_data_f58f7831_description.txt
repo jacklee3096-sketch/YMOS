@@ -1,0 +1,8 @@
+金融数据查询结果说明
+========================================
+查询内容: 鸿博股份 002229.SZ 财务报表 估值
+数据文件路径: C:\Users\lee\.openclaw-autoclaw\workspace\YMOS\miaoxiang\mx_finance_data\mx_finance_data_f58f7831.xlsx
+描述文件路径: C:\Users\lee\.openclaw-autoclaw\workspace\YMOS\miaoxiang\mx_finance_data\mx_finance_data_f58f7831_description.txt
+数据行数: 26
+表数量: 5
+Sheet 列表: 鸿博股份(002229.SZ)当前的市盈率(TTM)行业排名、, 鸿博股份(002229.SZ)当前的市销率(TTM)、市现率(, 鸿博股份(002229.SZ)的3年市净率PB历史百分位、3年, 鸿博股份(002229.SZ)的市盈率PE(TTM)、市净率P, 鸿博股份(002229.SZ)的营业总收入、营业收入等

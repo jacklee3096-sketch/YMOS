@@ -34,71 +34,85 @@ mkdir -p "Eyes/市场洞察/Raw_Data/$(date +%Y-%m)"
 mkdir -p "Eyes/市场洞察/$(date +%Y-%m)"
 ```
 
-### Step 2：拉取市场数据（自动回退）
+### Step 2：拉取分析数据
 
-**方式 A：市场信息 API（优先）**
+#### Step 2.1：拉取 em A股持仓个股新闻
+
+> **必须执行此步。**
 ```bash
-python3 Eyes/scripts/fetch_market_api.py 1 \
-  --output "Eyes/市场洞察/Raw_Data/$(date +%Y-%m)/financial_data_$(date +%Y%m%d).json"
+python3 Eyes\scripts\fetch_em_news.py \
+  --hours 24 \
+  --output "Eyes/市场洞察/Raw_Data/$(date +%Y-%m)/em_news_$(date +%Y%m%d).json"
 ```
 
-> 脚本会自动加载 `.env` 中的 `YMOS_MARKET_API_KEY`。无 key 时脚本以 exit(0) 退出并提示使用 RSS。
+**策略说明**：
+- 只对【持仓状态机】中 A股 标的拉取 
+- Watchlist 不拉个股新闻（节省 rate limit）
+- 美股/港股 Ticker 不支持 em，自动过滤
 
-**方式 B：RSS 免费数据源（回退 / 无 API Key 时使用）**
+#### Step 2.2：主 RSS 免费数据源
+
 ```bash
-python3 Eyes/scripts/fetch_rss.py 1 \
+python3 Eyes/scripts/fetch_rss_byMiniflux.py 1 \
   --output "Eyes/市场洞察/Raw_Data/$(date +%Y-%m)/financial_data_$(date +%Y%m%d).json"
 ```
 
 **Agent 执行规则**：
-1. 先尝试方式 A
-2. 若方式 A 的脚本输出包含"跳过 API 数据源"或未生成输出文件 → 自动回退到方式 B
-3. 用户指定天数时，把 `1` 替换为对应天数
+1. 用户指定天数时，把 `1` 替换为对应天数
 
-### Step 2.5：CIO 半成品处理（仅 RSS 路径需要）
-
-> **仅当 Step 2 使用了方式 B（RSS）时执行此步。**
-> API 路径（方式 A）的数据已经过清洗和分类，跳过此步。
-
-读取 Step 2 生成的 RSS 原始 JSON，调用：
-- `Brain/references/cio-rss-processor.md`
-
-CIO 处理器会执行：去重合并 → 噪音过滤 → 事件聚类 → 信号提取
-
-**输出路径**：`Eyes/市场洞察/Raw_Data/YYYY-MM/cio_processed_YYYYMMDD.md`
-
-### Step 2.6：拉取 Finnhub 持仓个股新闻（补充数据源，可选）
-
-> **仅当 `.env` 或环境变量中存在 `FINNHUB_API_KEY` 时执行。无 key 则静默跳过。**
-
+#### Step 2.3：补充 RSS 免费数据源
 ```bash
-python3 Eyes/scripts/fetch_finnhub_news.py \
-  --hours 24 \
-  --output "Eyes/市场洞察/Raw_Data/$(date +%Y-%m)/finnhub_news_$(date +%Y%m%d).json"
-```
-
-**策略说明**：
-- 只对【持仓状态机】中的美股/Crypto 标的调用 `/company-news` 接口
-- Watchlist 不拉个股新闻（节省 rate limit）
-- A股/港股 Ticker 不支持 Finnhub，自动过滤
-
-### Step 2.7：拉取补充 RSS 数据（可选）
-
-> **仅当 `Eyes/scripts/rss_sources_custom.json` 存在时执行。无此文件则静默跳过。**
->
-> 补充 RSS 与主数据源（API 或默认 RSS）独立运行，不互斥。
-> 适用场景：用户已有 Market Data API，但还想订阅特定行业/深度分析的 RSS 源。
-
-```bash
-python3 Eyes/scripts/fetch_rss.py {天数} \
+python3 Eyes/scripts/fetch_rss_byMiniflux.py 1 \
   --config Eyes/scripts/rss_sources_custom.json \
   --output "Eyes/市场洞察/Raw_Data/$(date +%Y-%m)/supplementary_rss_$(date +%Y%m%d).json"
 ```
 
 **Agent 执行规则**：
-1. 检查 `Eyes/scripts/rss_sources_custom.json` 是否存在
-2. 存在 → 执行拉取，输出为 `supplementary_rss_YYYYMMDD.json`
-3. 不存在 → 静默跳过，不提示用户
+1. 用户指定天数时，把 `1` 替换为对应天数
+
+---
+
+### Step 2.4 & 2.5：CIO 半成品处理（子 Agent 并行执行）
+
+> ⚠️ **本步骤使用子 Agent 并行处理，避免大文件污染主会话上下文**
+
+#### 子 Agent 配置
+
+| Agent ID | 任务 | 输入 | 输出 |
+|:---|:---|:---|:---|
+| `CIO-main` | 主 RSS CIO 处理 | `financial_data_{YYYYMMDD}.json` | `cio_processed_{YYYYMMDD}.md` |
+| `CIO-supple` | 补充 RSS CIO 处理 | `supplementary_rss_{YYYYMMDD}.json` | `cio_processed_custom_{YYYYMMDD}.md` |
+
+#### 调用方式
+
+**启动 Agent A (CIO-main)**：
+```
+## 任务：处理主 RSS 原始数据
+
+- 提示词：`Brain/references/cio-rss-processor.md`
+- 输入：`Eyes/市场洞察/Raw_Data/{YYYY-MM}/financial_data_{YYYYMMDD}.json`
+- 输出：`Eyes/市场洞察/Raw_Data/{YYYY-MM}/cio_processed_{YYYYMMDD}.md`
+
+请执行。
+```
+
+**启动 Agent B (CIO-supple)**：
+```
+## 任务：处理补充 RSS 原始数据
+
+- 提示词：`Brain/references/cio-rss-processor.md`
+- 输入：`Eyes/市场洞察/Raw_Data/{YYYY-MM}/supplementary_rss_{YYYYMMDD}.json`
+- 输出：`Eyes/市场洞察/Raw_Data/{YYYY-MM}/cio_processed_custom_{YYYYMMDD}.md`
+
+请执行。
+```
+
+#### 执行时序
+
+- **Step 2.4** 与 **Step 2.5** 可**并行执行**（无依赖）
+- 两个 Agent 都完成后，进入 Step 3
+
+---
 
 ### Step 3：调用 P13 分析
 
@@ -168,7 +182,7 @@ python3 Eyes/scripts/fetch_rss.py {天数} \
 | 内容 | 路径 |
 |:---|:---|
 | 市场数据脚本（API） | `Eyes/scripts/fetch_market_api.py` |
-| 市场数据脚本（RSS） | `Eyes/scripts/fetch_rss.py` |
+| 市场数据脚本（RSS） | `Eyes/scripts/fetch_rss_byMiniflux.py` |
 | RSS 源配置 | `Eyes/scripts/rss_sources.json` |
 | CIO 处理提示词 | `Brain/references/cio-rss-processor.md` |
 | Finnhub News 脚本 | `Eyes/scripts/fetch_finnhub_news.py` |

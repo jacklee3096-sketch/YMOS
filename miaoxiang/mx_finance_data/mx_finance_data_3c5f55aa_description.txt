@@ -1,0 +1,8 @@
+金融数据查询结果说明
+========================================
+查询内容: 大连电瓷 002606.SZ 财务报表 估值
+数据文件路径: C:\Users\lee\.openclaw-autoclaw\workspace\YMOS\miaoxiang\mx_finance_data\mx_finance_data_3c5f55aa.xlsx
+描述文件路径: C:\Users\lee\.openclaw-autoclaw\workspace\YMOS\miaoxiang\mx_finance_data\mx_finance_data_3c5f55aa_description.txt
+数据行数: 28
+表数量: 5
+Sheet 列表: 大连电瓷(002606.SZ)当前的市盈率(TTM)行业排名、, 大连电瓷(002606.SZ)当前的市销率(TTM)、市现率(, 大连电瓷(002606.SZ)的3年市盈率历史百分位、3年市净, 大连电瓷(002606.SZ)的市盈率PE(TTM)、市净率P, 大连电瓷(002606.SZ)的营业总收入、营业收入等

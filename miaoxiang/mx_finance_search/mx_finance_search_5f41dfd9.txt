@@ -1,0 +1,12 @@
+{
+  "data": [],
+  "traceId": "2813ede1c600364c90c03cdad1be5105-51a8b211-5a26-4ffb-8879-37a791218060",
+  "code": 0,
+  "status": 0,
+  "message": "OK",
+  "extraInfos": {
+    "decomposedQueries": [
+      "鸿博股份 002229.SZ 券商研报 深度分析"
+    ]
+  }
+}
