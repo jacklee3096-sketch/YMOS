@@ -1,0 +1,19 @@
+宏观数据查询结果说明
+========================================
+查询内容: 中国近五年GDP
+数据频率组数: 1
+
+各频率数据统计:
+  - yearly: 1 行
+
+生成的文件:
+  - mx_macro_data_86882a0b_yearly.csv
+
+详细说明:
+实体名称 [yearly]: GDP（年）
+标题 [yearly]: 2021至2025的GDP（年）
+单位 [yearly]: (亿元)
+
+数据源信息:
+接口: https://ai-saas.eastmoney.com/proxy/b/mcp/tool/searchMacroData
+查询时间: 2026-05-18 23:19:31

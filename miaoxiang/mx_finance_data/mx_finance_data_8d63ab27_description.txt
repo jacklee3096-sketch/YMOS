@@ -1,0 +1,8 @@
+金融数据查询结果说明
+========================================
+查询内容: 贵州茅台近期走势如何
+数据文件路径: C:\Users\lee\.openclaw-autoclaw\workspace\YMOS\miaoxiang\mx_finance_data\mx_finance_data_8d63ab27.xlsx
+描述文件路径: C:\Users\lee\.openclaw-autoclaw\workspace\YMOS\miaoxiang\mx_finance_data\mx_finance_data_8d63ab27_description.txt
+数据行数: 72
+表数量: 6
+Sheet 列表: 贵州茅台(600519.SH)当前的支撑位、压力位, 贵州茅台(600519.SH)当前的涨跌幅、5日涨跌幅等, 贵州茅台(600519.SH)的成交量、开盘价等, 贵州茅台(600519.SH)当前的主力流出(元)、主力流入(, 贵州茅台(600519.SH)的区间涨跌幅、区间换手率等, 贵州茅台(600519.SH)的BOLL布林线LOW、BOLL
