@@ -16,7 +16,39 @@ from urllib import error as urllib_error
 from urllib import request as urllib_request
 from typing import Dict, Any, Optional
 
-EM_API_KEY = os.environ.get("EM_API_KEY", "")
+
+def load_dotenv(env_path=None):
+    """Load environment variables from .env file."""
+    if env_path is None:
+        # .trae/skills/mx-finance-search/scripts/get_data.py
+        # -> .trae/skills/mx-finance-search/scripts/
+        # -> .trae/skills/mx-finance-search/
+        # -> .trae/skills/
+        # -> .trae/
+        # -> YMOS/ (contains .env)
+        env_path = Path(__file__).resolve().parents[4] / ".env"
+    else:
+        env_path = Path(env_path)
+
+    if not env_path.exists():
+        return
+
+    for line in env_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key = key.strip()
+        value = value.strip()
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
+load_dotenv()
+
+EM_API_KEY = os.getenv("EM_API_KEY", "")
 
 if not EM_API_KEY:
     raise RuntimeError(

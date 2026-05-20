@@ -128,10 +128,10 @@ python Eyes/scripts/fetch_rss_byMiniflux.py 1 `
 **执行子任务 A (CIO-main)**：
 ```json
 {
-  "name": "general_purpose_task",
+  "name": "auto-research-report-analyst",
   "parameters": {
     "description": "CIO主RSS处理",
-    "query": "读取文件 Eyes/市场洞察/Raw_Data/{YYYY-MM}/financial_data_{YYYYMMDD}.json，按照 Brain/references/cio-rss-processor.md 的规则处理（智能去重合并、噪音过滤、事件聚类、信号提取分类），输出格式化的半成品情报到 Eyes/市场洞察/Raw_Data/{YYYY-MM}/cio_processed_{YYYYMMDD}.md，处理完成后无需返回详细摘要",
+    "query": "【使用 DS-V4-Flash 模型】读取文件 Eyes/市场洞察/Raw_Data/{YYYY-MM}/financial_data_{YYYYMMDD}.json，按照 Brain/references/cio-rss-processor.md 的规则处理（智能去重合并、噪音过滤、事件聚类、信号提取分类），输出格式化的半成品情报到 Eyes/市场洞察/Raw_Data/{YYYY-MM}/cio_processed_{YYYYMMDD}.md，处理完成后无需返回详细摘要",
     "response_language": "zh"
   }
 }
@@ -140,10 +140,10 @@ python Eyes/scripts/fetch_rss_byMiniflux.py 1 `
 **执行子任务 B (CIO-supple)**：
 ```json
 {
-  "name": "general_purpose_task",
+  "name": "auto-research-report-analyst",
   "parameters": {
     "description": "CIO补充RSS处理",
-    "query": "读取文件 Eyes/市场洞察/Raw_Data/{YYYY-MM}/supplementary_rss_{YYYYMMDD}.json，按照 Brain/references/cio-rss-processor.md 的规则处理（智能去重合并、噪音过滤、事件聚类、信号提取分类），输出格式化的半成品情报到 Eyes/市场洞察/Raw_Data/{YYYY-MM}/cio_processed_custom_{YYYYMMDD}.md，处理完成后无需返回详细摘要",
+    "query": "【使用 DS-V4-Flash 模型】读取文件 Eyes/市场洞察/Raw_Data/{YYYY-MM}/supplementary_rss_{YYYYMMDD}.json，按照 Brain/references/cio-rss-processor.md 的规则处理（智能去重合并、噪音过滤、事件聚类、信号提取分类），输出格式化的半成品情报到 Eyes/市场洞察/Raw_Data/{YYYY-MM}/cio_processed_custom_{YYYYMMDD}.md，处理完成后无需返回详细摘要",
     "response_language": "zh"
   }
 }
@@ -159,43 +159,30 @@ python Eyes/scripts/fetch_rss_byMiniflux.py 1 `
 ### Step 3：调用 P13 分析
 
 > ⚠️ **前置条件**：必须等待 Step 2.1 ~ Step 2.5 **全部完成**后才能执行此步骤
-> ⚠️ **无论数据来自 API 还是 RSS，都必须严格按照 P13 标准模板输出。**
-> API 数据质量更高 ≠ 可以简化输出格式。P13 的价值不在于数据清洗（那是 CIO 的活），
-> 而在于 **信号识别 + 结构化呈现**（战略信号仪表盘 + 势能分析 + 风险警告）。
 
-**P13 分析输入文件（按优先级读取）**：
-1. **主输入**：`financial_data_YYYYMMDD.json`（API 路径）或 `cio_processed_YYYYMMDD.md`（RSS 路径）
-2. **补充输入**（如存在）：`finnhub_news_YYYYMMDD.json`
-   - `p15_trigger=true` 的条目 → P13 报告中标注「建议跑 P15」
-3. **补充输入**（如存在）：`supplementary_rss_YYYYMMDD.json`（用户自定义 RSS）
-
-调用：`Brain/references/p13-market-scanner.md`
-
-**P13 分析时，参考过去几天的历史洞察（如有）**：
-- 路径：`Eyes/市场洞察/YYYY-MM/` 目录下最近几份报告
-
-**输出格式硬约束**（缺一不可）：
-1. **市场体温**标签（Risk On / Risk Off / Chaos）+ **核心看点**
-2. **战略简报**（仪表盘表格 3-5 个信号 + 战略分析段落）
-3. **五维度市场详情**（市场风向 / 美股核心动态 / AI 领域 / Crypto / A股内参，无信息的维度略过）
-4. **机会评估与风险警告**（值得观察的机会 + 风险与纪律警告）
-5. **后续观察方向**
-6. 页脚声明（信息聚合与处理，非投资建议）
-7. 每段内容末尾附来源超链接（Markdown 超链接格式，如 `[Bloomberg](url)`，不放裸链接）
-
-**合规措辞约束**：不说"关注"说"观察"、不说"利好"说"验证/支撑"、不说"建议关注"说"后续市场焦点/变量可能在于"。
-
-> 具体模板见 `Brain/references/p13-market-scanner.md` 的 `# Output Format` 区块。
-
+**执行方式**：
+```json
+{
+  "name": "auto-research-report-analyst",
+  "parameters": {
+    "description": "P13市场洞察分析",
+    "query": "【使用 DS-V4-Pro 模型】按优先级读取：
+              1. **主输入**：`cio_processed_YYYYMMDD.md`
+              2. **补充输入**：`finnhub_news_YYYYMMDD.json`
+                 - `p15_trigger=true` 的条目 → P13 报告中标注「建议跑 P15」
+              3. **补充输入**：`cio_processed_custom_{YYYYMMDD}.md`
+              4. **P13 分析时，参考过去几天的历史洞察（如有）**：
+                 - 路径：`Eyes/市场洞察/YYYY-MM/` 目录下最近几份报告
+              5. 按照 Brain/references/p13-market-scanner.md 进行分析，严格按 p13-market-scanner.md `# Output Format` 区块 的格式输出报告到`Eyes/市场洞察/YYYY-MM/YYYY-MM-DD_市场洞察.md`，处理完成后无需返回详细摘要",
+    "response_language": "zh"
+  }
+}
+```
 > ⚠️ **P14 不在默认链路内**：用户明确要做板块深挖时再手动触发 `Brain/references/p14-sector-hunter.md`
 
-### Step 4：保存洞察报告
+### Step 4 在对话中输出
 
-**输出路径**：`Eyes/市场洞察/YYYY-MM/YYYY-MM-DD_市场洞察.md`
-
-### Step 5：在对话中输出
-
-直接在对话中输出完整 Markdown 报告内容。
+直接在对话中输出完整 `Eyes/市场洞察/YYYY-MM/YYYY-MM-DD_市场洞察.md` 报告内容。
 
 ---
 
