@@ -22,6 +22,10 @@ Eyes/市场洞察/
 Eyes/投资雷达/
 Brain/策略分析/
 
+# Analysis outputs (generated locally)
+miaoxiang/
+Report/
+
 # Personal stock folders (created during onboarding)
 持仓与关注/持仓/
 持仓与关注/动态Watchlist/
