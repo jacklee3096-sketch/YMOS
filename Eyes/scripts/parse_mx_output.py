@@ -71,44 +71,96 @@ def parse_stock_code(col_name: str) -> str:
     return col_name
 
 
-def parse_mx_xlsx(xlsx_path: Path) -> list[dict]:
+def parse_mx_xlsx(xlsx_path: Path, original_symbols: list[str] | None = None) -> list[dict]:
     """解析 mx-finance-data 返回的 xlsx 文件"""
     try:
         df = pd.read_excel(xlsx_path, engine="openpyxl", header=None)
     except Exception as e:
         print(f" 读取 xlsx 文件失败: {e}")
+        # 即使读取失败，也要为原始符号生成失败记录
+        if original_symbols:
+            is_intraday = is_trading_hours()
+            return [
+                {
+                    "symbol": s,
+                    "ok": False,
+                    "last_close": 0.0,
+                    "last_high": 0.0,
+                    "last_low": 0.0,
+                    "last_open": 0.0,
+                    "last_volume": 0.0,
+                    "pct_chg": 0.0,
+                    "data_type": "intraday" if is_intraday else "close",
+                }
+                for s in original_symbols
+            ]
         return []
     
     results = []
     is_intraday = is_trading_hours()
     
-    # 第一行是列名（时间、股票1、股票2...）
-    # 后续行是指标数据
-    if df.shape[0] < 2 or df.shape[1] < 2:
+    # 检查数据格式：可能有两种格式
+    # 格式1: 第一列是股票名称，第二列是时间，后续是指标（单股票查询）
+    # 格式2: 第一列是时间，后续列是股票（批量查询）
+    
+    if df.shape[0] < 2:
         print(" xlsx 数据格式不正确")
+        if original_symbols:
+            return [
+                {
+                    "symbol": s,
+                    "ok": False,
+                    "last_close": 0.0,
+                    "last_high": 0.0,
+                    "last_low": 0.0,
+                    "last_open": 0.0,
+                    "last_volume": 0.0,
+                    "pct_chg": 0.0,
+                    "data_type": "intraday" if is_intraday else "close",
+                }
+                for s in original_symbols
+            ]
         return []
     
-    # 获取股票列（从第二列开始）
+    # 先判断是哪种格式
+    first_cell = str(df.iloc[0, 0])
+    is_format1 = bool(re.search(r'\(\d{6}\.[SSZ]{2}\)', first_cell))
+    
+    # 获取股票和数据列的对应关系
     stock_cols = []
-    for col in range(1, df.shape[1]):
-        col_name = str(df.iloc[0, col])
+    
+    if is_format1:
+        # 格式1: 第一列是股票名称，从第一列开始找
+        col_name = first_cell
         code = parse_stock_code(col_name)
         if code:
-            stock_cols.append((col, code))
+            stock_cols.append((1, code))  # 数据在第二列
+    else:
+        # 格式2: 第一列是时间，从第二列开始找
+        for col in range(1, df.shape[1]):
+            col_name = str(df.iloc[0, col])
+            code = parse_stock_code(col_name)
+            if code:
+                stock_cols.append((col, code))
+    
+    # 建立从代码到列的映射
+    symbol_to_col = {code: col for col, code in stock_cols}
     
     # 提取指标数据
-    # 指标行索引：成交量、最低价、最新价、最高价、涨跌幅、开盘价
     indicator_map = {}
     for row in range(1, df.shape[0]):
         indicator_name = str(df.iloc[row, 0]).strip()
         if indicator_name:
             indicator_map[indicator_name] = row
     
+    # 确定要处理的股票列表
+    symbols_to_process = original_symbols if original_symbols else [code for _, code in stock_cols]
+    
     # 为每个股票生成记录
-    for col, symbol in stock_cols:
+    for symbol in symbols_to_process:
         record = {
             "symbol": symbol,
-            "ok": True,
+            "ok": False,
             "last_close": 0.0,
             "last_high": 0.0,
             "last_low": 0.0,
@@ -118,30 +170,35 @@ def parse_mx_xlsx(xlsx_path: Path) -> list[dict]:
             "data_type": "intraday" if is_intraday else "close",
         }
         
-        # 提取各指标值
-        if "最新价" in indicator_map:
-            val = df.iloc[indicator_map["最新价"], col]
-            record["last_close"] = float(val) if val else 0.0
-        
-        if "最高价" in indicator_map:
-            val = df.iloc[indicator_map["最高价"], col]
-            record["last_high"] = float(val) if val else 0.0
-        
-        if "最低价" in indicator_map:
-            val = df.iloc[indicator_map["最低价"], col]
-            record["last_low"] = float(val) if val else 0.0
-        
-        if "开盘价" in indicator_map:
-            val = df.iloc[indicator_map["开盘价"], col]
-            record["last_open"] = float(val) if val else 0.0
-        
-        if "成交量" in indicator_map:
-            val = df.iloc[indicator_map["成交量"], col]
-            record["last_volume"] = parse_volume(val)
-        
-        if "涨跌幅" in indicator_map:
-            val = str(df.iloc[indicator_map["涨跌幅"], col]).replace('%', '')
-            record["pct_chg"] = float(val) if val else 0.0
+        # 如果该股票在 xlsx 中有数据列，则解析数据
+        if symbol in symbol_to_col:
+            col = symbol_to_col[symbol]
+            record["ok"] = True
+            
+            # 提取各指标值
+            if "最新价" in indicator_map:
+                val = df.iloc[indicator_map["最新价"], col]
+                record["last_close"] = float(val) if val else 0.0
+            
+            if "最高价" in indicator_map:
+                val = df.iloc[indicator_map["最高价"], col]
+                record["last_high"] = float(val) if val else 0.0
+            
+            if "最低价" in indicator_map:
+                val = df.iloc[indicator_map["最低价"], col]
+                record["last_low"] = float(val) if val else 0.0
+            
+            if "开盘价" in indicator_map:
+                val = df.iloc[indicator_map["开盘价"], col]
+                record["last_open"] = float(val) if val else 0.0
+            
+            if "成交量" in indicator_map:
+                val = df.iloc[indicator_map["成交量"], col]
+                record["last_volume"] = parse_volume(val)
+            
+            if "涨跌幅" in indicator_map:
+                val = str(df.iloc[indicator_map["涨跌幅"], col]).replace('%', '')
+                record["pct_chg"] = float(val) if val else 0.0
         
         results.append(record)
     
@@ -180,11 +237,20 @@ def main() -> None:
         print(f" 输入文件不存在: {input_path}")
         sys.exit(1)
     
-    # 解析 xlsx
-    data = parse_mx_xlsx(input_path)
+    # 解析 xlsx，传递原始符号列表
+    original_symbols_list = None
+    if args.symbols:
+        original_symbols_list = [s.strip() for s in args.symbols.split(",")]
+    data = parse_mx_xlsx(input_path, original_symbols_list)
     
     # 提取实际解析出的股票代码
     actual_symbols = [r["symbol"] for r in data if r["ok"]]
+    
+    # 使用原始符号列表（如果提供了）
+    if args.symbols:
+        original_symbols = [s.strip() for s in args.symbols.split(",")]
+    else:
+        original_symbols = actual_symbols
     
     # 构建输出
     output = {
@@ -192,7 +258,7 @@ def main() -> None:
         "fetched_at": datetime.datetime.now().isoformat(),
         "data_type": "intraday" if is_trading_hours() else "close",
         "count": len(data),
-        "symbols": actual_symbols,
+        "symbols": original_symbols,  # 保留原始请求的符号列表
         "data": data,
     }
     

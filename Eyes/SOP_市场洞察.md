@@ -167,10 +167,10 @@ python Eyes/scripts/fetch_rss_byMiniflux.py 1 `
   "parameters": {
     "description": "P13市场洞察分析",
     "query": "【使用 DS-V4-Pro 模型】按优先级读取：
-              1. **主输入**：`cio_processed_YYYYMMDD.md`
-              2. **补充输入**：`finnhub_news_YYYYMMDD.json`
+              1. **主输入**：`Eyes/市场洞察/Raw_Data/{YYYY-MM}/cio_processed_YYYYMMDD.md`
+              2. **补充输入**：`Eyes/市场洞察/Raw_Data/{YYYY-MM}/finnhub_news_YYYYMMDD.json`
                  - `p15_trigger=true` 的条目 → P13 报告中标注「建议跑 P15」
-              3. **补充输入**：`cio_processed_custom_{YYYYMMDD}.md`
+              3. **补充输入**：`Eyes/市场洞察/Raw_Data/{YYYY-MM}/cio_processed_custom_{YYYYMMDD}.md`
               4. **P13 分析时，参考过去几天的历史洞察（如有）**：
                  - 路径：`Eyes/市场洞察/YYYY-MM/` 目录下最近几份报告
               5. 按照 Brain/references/p13-market-scanner.md 进行分析，严格按 p13-market-scanner.md `# Output Format` 区块 的格式输出报告到`Eyes/市场洞察/YYYY-MM/YYYY-MM-DD_市场洞察.md`，处理完成后无需返回详细摘要",

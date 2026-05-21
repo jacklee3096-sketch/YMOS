@@ -101,10 +101,9 @@ def main() -> None:
         print("NO_SYMBOLS: 状态机里没有可扫描 ticker")
         return
 
-    print(f"📊 从状态机提取到 {len(deduped)} 个 ticker: {', '.join(deduped)}")
+    print(f"[INFO] 从状态机提取到 {len(deduped)} 个 ticker: {', '.join(deduped)}")
 
     # 2) 路由请求
-    out_dir = str(PATHS.radar_raw_dir(args.date_tag))
     finnhub_key   = args.finnhub_token  or os.getenv("FINNHUB_API_KEY", "")
     tushare_token = args.tushare_token  or os.getenv("TUSHARE_TOKEN", "")
 
@@ -112,9 +111,16 @@ def main() -> None:
         sys.executable,
         str(SCRIPTS_DIR / "fetch_price_router.py"),
         "--symbols", ",".join(deduped),
-        "--output-dir", out_dir,
         "--date-tag", args.date_tag,
     ]
+    
+    # 如果指定了完整输出路径，优先使用 --output
+    if args.output:
+        cmd += ["--output", args.output]
+    else:
+        # 否则使用默认输出目录
+        out_dir = str(PATHS.radar_raw_dir(args.date_tag))
+        cmd += ["--output-dir", out_dir]
     if finnhub_key:
         cmd += ["--finnhub-token", finnhub_key]
     if tushare_token:
